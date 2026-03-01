@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { boardDataService, boardService, taskService } from "../services";
-import { Board, ColumnWithTasks } from "../supabase/models";
+import { Board, ColumnWithTasks, Task } from "../supabase/models";
 import { useEffect, useState } from "react";
 import { useSupabase } from "../supabase/SupabaseProvider";
 
@@ -138,7 +138,31 @@ export function useBoard(boardId: string) {
             try {
                 await taskService.moveTask(supabase!, taskId, newColumnId, newOrder);
                 
-                // make setColumns disini lanjut besok
+                setColumns((prev) => {
+                    const newColumn = [...prev]
+
+                    // cari dan hapus task dari kolom lama
+                    let taskToMove: Task | null = null;
+                    for (const col of newColumn) {
+                        const taskIndex = col.tasks.findIndex((task) => task.id === taskId);
+                        if (taskIndex !== -1) {
+                            taskToMove = col.tasks[taskIndex];
+                            col.tasks.splice(taskIndex, 1);
+                            break;
+                        }    
+                    }
+                
+                    if (taskToMove) {
+                        // tambah ke kolom task baru sini brek
+                        const targetColumn = newColumn.find((col) => col.id === newColumnId);
+                        if (targetColumn) {
+                            targetColumn.tasks.splice(newOrder, 0, taskToMove);
+                        }
+                    }
+
+                    return newColumn;
+                
+                });
             } catch {}
         }
 
