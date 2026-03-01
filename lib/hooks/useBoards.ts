@@ -139,11 +139,11 @@ export function useBoard(boardId: string) {
                 await taskService.moveTask(supabase!, taskId, newColumnId, newOrder);
                 
                 setColumns((prev) => {
-                    const newColumn = [...prev]
+                    const newColumns = [...prev]
 
                     // cari dan hapus task dari kolom lama
                     let taskToMove: Task | null = null;
-                    for (const col of newColumn) {
+                    for (const col of newColumns) {
                         const taskIndex = col.tasks.findIndex((task) => task.id === taskId);
                         if (taskIndex !== -1) {
                             taskToMove = col.tasks[taskIndex];
@@ -154,16 +154,18 @@ export function useBoard(boardId: string) {
                 
                     if (taskToMove) {
                         // tambah ke kolom task baru sini brek
-                        const targetColumn = newColumn.find((col) => col.id === newColumnId);
+                        const targetColumn = newColumns.find((col) => col.id === newColumnId);
                         if (targetColumn) {
                             targetColumn.tasks.splice(newOrder, 0, taskToMove);
                         }
                     }
 
-                    return newColumn;
+                    return newColumns;
                 
                 });
-            } catch {}
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to create the task");
+            }
         }
 
     return {
