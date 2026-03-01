@@ -30,7 +30,11 @@ export default function SupabaseProvider({
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
-        accessToken: async () => session.getToken() ?? null,
+        accessToken: async () => {
+          const token = await session.getToken({ template: "supabase" });
+          console.log("Supabase JWT token:", token); // debug sementara
+          return token ?? null;
+        },
       }
     );
 
@@ -42,14 +46,13 @@ export default function SupabaseProvider({
     <Context.Provider value={{ supabase, isLoaded }}>
       {!isLoaded ? <div>Loading...</div> : children}
     </Context.Provider>
-  ); 
+  );
 }
 
 export const useSupabase = () => {
   const context = useContext(Context);
-  if (context  === undefined) {
+  if (context === undefined) {
     throw new Error("useSupabase needs to be inside the provider");
   }
-
   return context;
-}
+};
