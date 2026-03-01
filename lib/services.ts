@@ -132,7 +132,6 @@ export const taskService = {
             .update({ 
                 column_id: newColumnId, 
                 sort_order: newOrder, 
-                updated_at: new Date().toISOString(),
             })
             .eq("id", parseInt(taskId));
         if (error) throw error;

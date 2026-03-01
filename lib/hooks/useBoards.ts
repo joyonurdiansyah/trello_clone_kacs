@@ -164,7 +164,7 @@ export function useBoard(boardId: string) {
                 
                 });
             } catch (err) {
-                setError(err instanceof Error ? err.message : "Failed to create the task");
+                setError(err instanceof Error ? err.message : "Failed to move the task");
             }
         }
 
