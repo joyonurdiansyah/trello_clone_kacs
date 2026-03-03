@@ -235,7 +235,7 @@ function TaskOverlay({ task }: { task: Task }) {
 
 export default function BoardPage() {
     const { id } = useParams<{ id: string }>();
-    const { board, createColumn, updateBoard, columns, createRealTask, setColumns, moveTask, updateColumn } = useBoard(id);
+    const { board, createColumn, updateBoard, columns, createRealTask, setColumns, moveTask } = useBoard(id);
 
     const [isEditingTitle, setIsEditingTitle] = useState(false)
     const [newTitle, setNewTitle] = useState("")
@@ -405,16 +405,14 @@ export default function BoardPage() {
         setIsCreatingColumn(false);
     }
 
-    async function handleUpdateColumn(e: React.FormEvent) {
+    async function handleUpdateColumn(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+        if (!newColumnTitle.trim()) return;
 
-        if (!editingColumnTitle.trim() || !editingColumn) return;
+        await (newColumnTitle.trim());
 
-        await updateColumn(editingColumn.id, editingColumnTitle.trim());
-
-        setEditingColumnTitle("");
-        setIsEditingColumn(false);
-        setEditingColumn(null);
+        setNewColumnTitle("")
+        setIsCreatingColumn(false);
     }
 
     function handleEditColumn(column: ColumnWithTasks) {
@@ -672,18 +670,11 @@ export default function BoardPage() {
                             />
                         </div>
                         <div className="space-x-2 flex justify-end">
-                            <Button
-                                type="button"
-                                onClick={() => {
-                                    setIsEditingColumn(false);
-                                    setEditingColumnTitle("");
-                                    setEditingColumn(null);
-                                }}
-                                variant="outline"
-                            >
-                                Cancel
-                            </Button>
-                            <Button type="submit">Edit Column</Button>
+                            <Button 
+                            type="button" 
+                            onClick={() => setIsCreatingColumn(false)} 
+                            variant="outline">Cancel</Button>
+                            <Button type="submit">Create Column</Button>
                         </div>
                     </form>
                 </DialogContent>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { boardDataService, boardService, taskService } from "../services";
+import { boardDataService, boardService, columnService, taskService } from "../services";
 import { Board, ColumnWithTasks, Task } from "../supabase/models";
 import { useEffect, useState } from "react";
 import { useSupabase } from "../supabase/SupabaseProvider";
@@ -56,6 +56,7 @@ export function useBoards() {
 }
 
 export function useBoard(boardId: string) {
+    const { user } = useUser(); // ✅ FIX: tambahkan baris ini
     const { supabase } = useSupabase();
     const [board, setBoard] = useState<Board | null>(null);
     const [columns, setColumns] = useState<ColumnWithTasks[]>([]);
@@ -168,6 +169,44 @@ export function useBoard(boardId: string) {
             }
         }
 
+        async function createColumn(title: string) {
+            if (!board || !user) throw new Error("Board not loaded")
+
+                try {
+                    const newColumn = await columnService.createColumn(supabase!, {
+                        title, 
+                        board_id: board.id, 
+                        sort_order: columns.length,
+                        user_id: user?.id,
+                    });
+
+                    setColumns((prev) => [...prev, { ...newColumn, tasks: [] }]);
+                    return newColumn;
+                } catch (err) {
+                    setError(err instanceof Error ? err.message : "Failed to create column");
+            }
+         }
+
+    async function updateColumn(columnId: string, title: string) {
+        try {
+            const updatedColumn = await columnService.updateColumnTitle(
+                supabase!,
+                columnId,
+                title
+            );
+
+            setColumns((prev) =>
+                prev.map((col) =>
+                    col.id === columnId ? { ...col, ...updatedColumn } : col
+                )
+            );
+
+            return updatedColumn;
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to create column");
+        }
+    }
+
     return {
         board,
         columns,
@@ -177,5 +216,7 @@ export function useBoard(boardId: string) {
         createRealTask,
         setColumns,
         moveTask,
+        createColumn,
+        updateColumn
     };
 }
